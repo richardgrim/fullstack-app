@@ -1,0 +1,180 @@
+<section aria-label="Configuración de servicios y horarios">
+  <header>
+    <div>
+      <p class="eyebrow">CONFIGURACIÓN DEL NEGOCIO</p>
+      <h2>Servicios y disponibilidad</h2>
+    </div>
+    <button type="button" (click)="load()" [disabled]="loading()||saving()">
+      Actualizar configuración
+    </button>
+  </header>
+  <p>
+    Horarios y bloqueos en hora de Bolivia (UTC−4). Los cambios se aplican a
+    nuevas reservas; no modifican citas existentes.
+  </p>
+  @if(loading()){
+  <p role="status">Cargando configuración…</p>
+  } @if(error()){
+  <p class="error" role="alert">{{error()}}</p>
+  } @if(notice()){
+  <p class="success" role="status">{{notice()}}</p>
+  } @if(pending();as change){
+  <aside class="review" aria-label="Confirmación del cambio">
+    <h3>Revisa el cambio</h3>
+    <p>{{change.summary}}</p>
+    <button class="primary" (click)="confirm()" [disabled]="saving()">
+      {{saving()?'Guardando…':'Confirmar cambio'}}</button
+    ><button (click)="pending.set(null)" [disabled]="saving()">
+      Volver sin guardar
+    </button>
+  </aside>
+  } @if(config();as data){
+  <fieldset [disabled]="saving()||loading()">
+    <legend>Servicios</legend>
+    <div class="service-list">
+      @for(service of data.services;track service.id){<button
+        type="button"
+        (click)="edit(service)"
+      >
+        <strong>{{service.name}}</strong
+        ><span
+          >{{service.durationMinutes}} min ·
+          {{service.active?'Disponible':'Inactivo'}}</span
+        ><span>Editar</span></button
+      >}
+    </div>
+    <button type="button" (click)="edit(null)">Nuevo servicio</button>
+    <form (ngSubmit)="stageService()">
+      <h3>{{serviceId===null?'Crear servicio':'Editar servicio'}}</h3>
+      <label for="service-name">Nombre del servicio</label
+      ><input
+        id="service-name"
+        name="serviceName"
+        [(ngModel)]="serviceName"
+        required
+        minlength="2"
+        maxlength="100"
+      />
+      <label for="service-description">Descripción</label
+      ><textarea
+        id="service-description"
+        name="description"
+        [(ngModel)]="description"
+        required
+        minlength="2"
+        maxlength="400"
+        rows="3"
+      ></textarea>
+      <label for="service-duration">Duración en minutos (15–240)</label
+      ><input
+        id="service-duration"
+        name="duration"
+        type="number"
+        min="15"
+        max="240"
+        step="1"
+        [(ngModel)]="duration"
+        required
+      />
+      <label class="check"
+        ><input type="checkbox" name="active" [(ngModel)]="active" />Disponible
+        para nuevas reservas</label
+      >
+      <p>
+        Desactivar un servicio lo oculta del catálogo, pero conserva sus citas.
+      </p>
+      <button class="primary" type="submit">Revisar servicio</button>
+    </form>
+  </fieldset>
+  <fieldset [disabled]="saving()||loading()">
+    <legend>Horario semanal</legend>
+    <label for="weekday">Día de la semana</label
+    ><select id="weekday" [ngModel]="weekday" (ngModelChange)="loadDay($event)">
+      @for(day of days;track day.id){
+      <option [ngValue]="day.id">{{day.name}}</option>
+      }
+    </select>
+    <p>
+      Las franjas deben pertenecer al mismo día y no superponerse. Sin franjas,
+      el día queda cerrado.
+    </p>
+    @for(period of periods;track $index){
+    <div class="period">
+      <div>
+        <label [for]="'open-'+$index">Desde</label
+        ><input [id]="'open-'+$index" type="time" [(ngModel)]="period.opens" />
+      </div>
+      <div>
+        <label [for]="'close-'+$index">Hasta</label
+        ><input
+          [id]="'close-'+$index"
+          type="time"
+          [(ngModel)]="period.closes"
+        />
+      </div>
+      <button (click)="removePeriod($index)">Quitar franja</button>
+    </div>
+    } @if(!periods.length){
+    <p>Día cerrado.</p>
+    }
+    <div class="actions">
+      <button (click)="addPeriod()" [disabled]="periods.length>=8">
+        Añadir franja</button
+      ><button class="primary" (click)="stageHours()">Revisar horario</button>
+    </div>
+  </fieldset>
+  <fieldset [disabled]="saving()||loading()">
+    <legend>Bloqueos por fecha</legend>
+    <p>
+      Reserva tiempo sin atención. Un bloqueo no puede superponerse con una cita
+      confirmada ni con otro bloqueo.
+    </p>
+    <form (ngSubmit)="stageBlock()">
+      <label for="block-date">Fecha del bloqueo</label
+      ><input
+        id="block-date"
+        name="blockDate"
+        type="date"
+        [(ngModel)]="blockDate"
+        required
+      />
+      <div class="period">
+        <div>
+          <label for="block-open">Inicio del bloqueo</label
+          ><input
+            id="block-open"
+            name="blockOpens"
+            type="time"
+            [(ngModel)]="blockOpens"
+            required
+          />
+        </div>
+        <div>
+          <label for="block-close">Fin del bloqueo</label
+          ><input
+            id="block-close"
+            name="blockCloses"
+            type="time"
+            [(ngModel)]="blockCloses"
+            required
+          />
+        </div>
+      </div>
+      <button class="primary" type="submit">Revisar bloqueo</button>
+    </form>
+    <h3>Bloqueos vigentes</h3>
+    @for(block of data.blocks;track block.id){
+    <div class="block">
+      <span
+        >{{block.startsAt|date:'dd/MM/yyyy':'-0400'}} ·
+        {{block.startsAt|date:'HH:mm':'-0400'}}–{{block.endsAt|date:'HH:mm':'-0400'}}</span
+      ><button (click)="stageRemove(block)">
+        Quitar bloqueo #{{block.id}}
+      </button>
+    </div>
+    }@if(!data.blocks.length){
+    <p>No hay bloqueos vigentes.</p>
+    }
+  </fieldset>
+  }
+</section>

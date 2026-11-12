@@ -1,0 +1,84 @@
+<section aria-label="Agenda del responsable">
+  <div class="heading">
+    <div>
+      <p class="eyebrow">GESTIÓN DE CITAS</p>
+      <h2>Agenda del responsable</h2>
+    </div>
+    <button (click)="load()" [disabled]="loading()||saving()">
+      Actualizar agenda
+    </button>
+  </div>
+  <p>
+    Hora de Bolivia · America/La_Paz. Registra el resultado cuando termine el
+    horario de la cita.
+  </p>
+  <div class="filters">
+    <div>
+      <label for="agenda-date">Día de la agenda</label
+      ><input
+        id="agenda-date"
+        type="date"
+        [ngModel]="date()"
+        (ngModelChange)="filter($event,status())"
+        [disabled]="saving()"
+      />
+    </div>
+    <div>
+      <label for="agenda-status">Estado</label
+      ><select
+        id="agenda-status"
+        [ngModel]="status()"
+        (ngModelChange)="filter(date(),$event)"
+        [disabled]="saving()"
+      >
+        <option value="">Todos los estados</option>
+        <option value="confirmed">Confirmada</option>
+        <option value="cancelled">Cancelada</option>
+        <option value="attended">Atendida</option>
+        <option value="missed">No asistió</option>
+      </select>
+    </div>
+  </div>
+  @if(error()){
+  <p class="error" role="alert">{{error()}}</p>
+  } @if(notice()){
+  <p class="success" role="status">{{notice()}}</p>
+  } @if(loading()){
+  <p role="status">Cargando agenda…</p>
+  } @if(!loading()&&!error()&&!appointments().length){
+  <p>No hay citas para esta fecha y estado.</p>
+  } @for(appointment of appointments();track appointment.id){
+  <article>
+    <div>
+      <h3>
+        {{appointment.startsAt|date:'HH:mm':'-0400'}}–{{appointment.endsAt|date:'HH:mm':'-0400'}}
+        · {{appointment.serviceName}}
+      </h3>
+      <p>{{appointment.clientName}} · Cita #{{appointment.id}}</p>
+      <span class="badge">{{label(appointment.status)}}</span>
+    </div>
+    @if(appointment.canComplete){
+    <div class="actions">
+      <button [disabled]="saving()" (click)="choose(appointment,'attended')">
+        Marcar atendida</button
+      ><button [disabled]="saving()" (click)="choose(appointment,'missed')">
+        Marcar no asistió
+      </button>
+    </div>
+    } @else if(appointment.status==='confirmed'){<small
+      >El resultado se habilita después de finalizar el horario. Actualiza la
+      agenda cuando corresponda.</small
+    >} @if(pending()?.appointment?.id===appointment.id){
+    <div class="review">
+      <p>
+        ¿Registrar esta cita como «{{label(pending()!.status)}}»? El resultado
+        quedará guardado y no podrá cambiarse desde esta pantalla.
+      </p>
+      <button class="primary" [disabled]="saving()" (click)="confirm()">
+        {{saving()?'Guardando…':'Confirmar resultado'}}</button
+      ><button [disabled]="saving()" (click)="pending.set(null)">Volver</button>
+    </div>
+    }
+  </article>
+  }
+</section>

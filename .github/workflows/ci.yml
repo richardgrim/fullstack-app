@@ -1,0 +1,93 @@
+name: Agenda Clara CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: agenda-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+        working-directory: backend
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: reservas
+          POSTGRES_USER: reservas
+          # Credencial desechable del contenedor CI; nunca es la clave local.
+          POSTGRES_PASSWORD: agenda-ci-ephemeral
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U reservas -d reservas"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    env:
+      DB_PASSWORD: agenda-ci-ephemeral
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.23.1"
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - run: npm ci
+      - name: Pruebas de API, permisos y concurrencia
+        run: npm test 2>&1 | tee backend-test-results.txt
+      - name: Migraciones e idempotencia
+        run: |
+          npm run migrate
+          npm run migrate
+      - name: Evidencia de pruebas del servidor
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: backend-test-results
+          path: backend/backend-test-results.txt
+          retention-days: 7
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        shell: bash
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22.23.1"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - name: Pruebas de interfaz
+        run: npm test -- --watch=false 2>&1 | tee frontend-test-results.txt
+      - run: npm run build
+      - name: Evidencia de pruebas de interfaz
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: frontend-test-results
+          path: frontend/frontend-test-results.txt
+          retention-days: 7
+      - name: Interfaz compilada
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: agenda-clara-frontend
+          path: frontend/dist/frontend/
+          if-no-files-found: error
+          retention-days: 7

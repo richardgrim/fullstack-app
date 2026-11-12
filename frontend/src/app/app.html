@@ -1,0 +1,302 @@
+<header class="top">
+  <a href="/" class="brand">◷ <strong>Agenda Clara</strong></a
+  ><span>Servicios & citas</span><span class="demo">Demostración local</span>
+</header>
+<main>
+  <section class="intro">
+    <p class="eyebrow">TU TIEMPO, BIEN ORGANIZADO</p>
+    <h1>Encuentra un momento<br />para tu próxima consulta.</h1>
+    <p>
+      Elige un servicio, encuentra tu horario y confirma tu cita.<br />Una
+      agenda sencilla, con espacio para lo importante.
+    </p>
+  </section>
+  <section class="account" aria-label="Tu cuenta">
+    @if(sessionLoading()){
+    <p role="status">Comprobando sesión…</p>
+    } @else if(user();as person){
+    <div class="account-heading">
+      <div>
+        <p class="eyebrow">TU CUENTA</p>
+        <h2>Hola, {{person.name}}</h2>
+        <p>{{person.email}}</p>
+      </div>
+      <button
+        class="secondary"
+        (click)="logout()"
+        [disabled]="authBusy()||bookingBusy()||cancelling()||managerBusy()"
+      >
+        Cerrar sesión
+      </button>
+    </div>
+    } @else{
+    <div class="account-heading">
+      <div>
+        <h2>
+          {{registering()?'Crea tu cuenta de prueba':'Inicia sesión para
+          reservar'}}
+        </h2>
+        <p>
+          Puedes consultar horarios sin cuenta. Usa datos ficticios en esta
+          demostración.
+        </p>
+      </div>
+      <button
+        class="text-button"
+        (click)="registering.set(!registering());authError.set('')"
+        [disabled]="authBusy()"
+      >
+        {{registering()?'Ya tengo cuenta':'Crear una cuenta'}}
+      </button>
+    </div>
+    <form class="auth-form" (ngSubmit)="authenticate()">
+      @if(registering()){
+      <div>
+        <label for="name">Nombre</label
+        ><input
+          id="name"
+          name="name"
+          [(ngModel)]="name"
+          required
+          minlength="2"
+          maxlength="80"
+          autocomplete="name"
+          [disabled]="authBusy()"
+        />
+      </div>
+      }
+      <div>
+        <label for="email">Correo</label
+        ><input
+          id="email"
+          name="email"
+          type="email"
+          [(ngModel)]="email"
+          required
+          maxlength="254"
+          autocomplete="username"
+          [disabled]="authBusy()"
+        />
+      </div>
+      <div>
+        <label for="password">Contraseña (12–128 caracteres)</label
+        ><input
+          id="password"
+          name="password"
+          type="password"
+          [(ngModel)]="password"
+          required
+          minlength="12"
+          maxlength="128"
+          [attr.autocomplete]="registering()?'new-password':'current-password'"
+          [disabled]="authBusy()"
+        />
+      </div>
+      <button class="primary" type="submit" [disabled]="authBusy()">
+        {{authBusy()?'Un momento…':registering()?'Crear cuenta':'Entrar'}}
+      </button>
+    </form>
+    } @if(authError()){
+    <p class="error" role="alert">{{authError()}}</p>
+    }
+  </section>
+  <div class="workspace">
+    <section aria-label="Catálogo de servicios">
+      <div class="section-title">
+        <span>01</span>
+        <h2>Elige tu servicio</h2>
+      </div>
+      @if(loading()){
+      <p role="status">Cargando servicios…</p>
+      } @for(service of services();track service.id){<button
+        class="service"
+        type="button"
+        [disabled]="bookingBusy()"
+        [class.selected]="selected()?.id===service.id"
+        [attr.aria-pressed]="selected()?.id===service.id"
+        (click)="choose(service)"
+      >
+        <span class="duration">{{service.durationMinutes}} min</span>
+        <h3>{{service.name}}</h3>
+        <p>{{service.description}}</p>
+        <span class="pick"
+          >{{selected()?.id===service.id?'Seleccionado ✓':'Consultar horarios
+          →'}}</span
+        ></button
+      >} @if(!loading()&&!services().length){
+      <p>No hay servicios disponibles.</p>
+      <button class="secondary" (click)="load()">Volver a cargar</button>}
+    </section>
+    <section class="availability" aria-label="Disponibilidad">
+      <div class="section-title">
+        <span>02</span>
+        <h2>Consulta un día</h2>
+      </div>
+      <p class="zone">Hora de Bolivia · America/La_Paz (UTC−4)</p>
+      @if(selected();as service){
+      <div class="selection">
+        <strong>{{service.name}}</strong
+        ><span>{{service.durationMinutes}} minutos</span>
+      </div>
+      }@else{
+      <p class="hint">Selecciona primero un servicio del catálogo.</p>
+      } <label for="date">Fecha de la cita</label
+      ><input
+        id="date"
+        type="date"
+        [disabled]="bookingBusy()"
+        [min]="today"
+        [max]="lastDay"
+        [ngModel]="date()"
+        (ngModelChange)="changeDate($event)"
+      /><button
+        class="primary"
+        type="button"
+        [disabled]="!selected()||!date()||searching()||bookingBusy()"
+        (click)="search()"
+      >
+        {{searching()?'Consultando…':'Ver horarios disponibles'}}
+      </button>
+      @if(error()){
+      <p class="error" role="alert">{{error()}}</p>
+      } @if(confirmation()){
+      <p class="success" role="status">{{confirmation()}}</p>
+      } @if(searching()){
+      <p role="status">Buscando horarios para tu servicio…</p>
+      } @if(checked()){
+      <div class="results" aria-live="polite">
+        <h3>{{slots().length}} horarios disponibles</h3>
+        <div class="slots">
+          @for(slot of slots();track slot.startsAt){<button
+            type="button"
+            class="slot"
+            [disabled]="bookingBusy()"
+            [class.chosen]="chosenSlot()?.startsAt===slot.startsAt"
+            [attr.aria-pressed]="chosenSlot()?.startsAt===slot.startsAt"
+            (click)="pickSlot(slot)"
+          >
+            {{slot.startsAt|date:'HH:mm':'-0400'}}<span
+              >hasta {{slot.endsAt|date:'HH:mm':'-0400'}}</span
+            ></button
+          >}
+        </div>
+        @if(!slots().length){
+        <p>No hay horarios para este día. Prueba otra fecha.</p>
+        }
+      </div>
+      } @if(chosenSlot();as slot){
+      <div class="booking-review">
+        <h3>Revisa tu cita</h3>
+        <p>{{selected()?.name}}</p>
+        <p>
+          {{slot.startsAt|date:'dd/MM/yyyy':'-0400'}} ·
+          {{slot.startsAt|date:'HH:mm':'-0400'}}–{{slot.endsAt|date:'HH:mm':'-0400'}}
+          (Bolivia)
+        </p>
+        @if(user()){<button
+          class="primary"
+          (click)="reserve()"
+          [disabled]="bookingBusy()||authBusy()||cancelling()"
+        >
+          {{bookingBusy()?'Confirmando…':'Confirmar reserva'}}</button
+        >}@else{
+        <p>Inicia sesión o crea una cuenta arriba para confirmar.</p>
+        }
+      </div>
+      }
+      <div class="note">
+        <strong>Tu horario se asegura al confirmar</strong>
+        <p>
+          Seleccionar un horario no crea una cita. La confirmación aparecerá
+          aquí y en Mis citas.
+        </p>
+      </div>
+    </section>
+  </div>
+  @if(user()){
+  <section class="my-bookings" aria-label="Mis citas">
+    <div class="account-heading">
+      <h2>Mis citas</h2>
+      <button
+        class="text-button"
+        (click)="loadBookings()"
+        [disabled]="bookingsLoading()||cancelling()"
+      >
+        Actualizar
+      </button>
+    </div>
+    @if(bookingsLoading()){
+    <p role="status">Cargando tus citas…</p>
+    } @if(bookingsError()){
+    <p class="error" role="alert">{{bookingsError()}}</p>
+    } @for(booking of bookings();track booking.id){
+    <article class="booking">
+      <div>
+        <h3>{{booking.serviceName}}</h3>
+        <p>
+          {{booking.startsAt|date:'dd/MM/yyyy':'-0400'}} ·
+          {{booking.startsAt|date:'HH:mm':'-0400'}}–{{booking.endsAt|date:'HH:mm':'-0400'}}
+          (Bolivia)
+        </p>
+        <small>Reserva #{{booking.id}}</small>
+      </div>
+      <span class="badge">{{statusLabel(booking.status)}}</span>
+      @if(booking.canCancel){<button
+        class="text-button"
+        [disabled]="cancelling()||bookingBusy()||authBusy()"
+        (click)="askCancel(booking)"
+      >
+        Cancelar cita</button
+      >} @if(cancelTarget()?.id===booking.id){
+      <div class="cancel-review">
+        <p>
+          ¿Cancelar tu cita del {{booking.startsAt|date:'dd/MM/yyyy':'-0400'}} a
+          las {{booking.startsAt|date:'HH:mm':'-0400'}}? El horario quedará
+          libre para otra persona.
+        </p>
+        <button
+          class="secondary"
+          [disabled]="cancelling()"
+          (click)="cancelBooking()"
+        >
+          {{cancelling()?'Cancelando…':'Sí, cancelar cita'}}</button
+        ><button
+          class="text-button"
+          [disabled]="cancelling()"
+          (click)="cancelTarget.set(null)"
+        >
+          Conservar cita
+        </button>
+      </div>
+      }
+    </article>
+    } @if(!bookingsLoading()&&!bookingsError()&&!bookings().length){
+    <p>
+      Aún no tienes citas. Elige un servicio para encontrar tu primer horario.
+    </p>
+    } @if(cancellationNotice()){
+    <p class="success" role="status">{{cancellationNotice()}}</p>
+    }
+    <p class="note">
+      Puedes cancelar tus citas confirmadas antes de su inicio. Las citas
+      canceladas permanecen en tu historial.
+    </p>
+  </section>
+  } @if(user()?.role==='manager'){<app-manager
+    (busyChange)="managerBusy.set($event)"
+  /><button
+    class="secondary"
+    [disabled]="settingsBusy()"
+    (click)="settingsOpen.set(!settingsOpen())"
+  >
+    {{settingsOpen()?'Cerrar configuración':'Gestionar servicios y horarios'}}
+  </button>
+  @if(settingsOpen()){<app-settings
+    (busyChange)="settingsBusy.set($event)"
+    (changed)="configurationChanged()"
+  />}}
+  <footer>
+    Proyecto 02 · Richard Grichukin Mendez
+    <span>Servicios ficticios · Sin pagos</span>
+  </footer>
+</main>
