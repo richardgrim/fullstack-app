@@ -1,6 +1,6 @@
 # Integración continua
 
-El flujo `.github/workflows/ci.yml` está preparado para push a main, pull requests y ejecución manual. **Todavía no se ha ejecutado en GitHub.** Su primera ejecución se verificará después de autorizar la publicación.
+El flujo `.github/workflows/ci.yml` está preparado para push a main, pull requests y ejecución manual. **Primera ejecución aprobada:** [ver ejecución](https://github.com/richardgrim/fullstack-app/actions/runs/43143041184), commit 89df666.
 
 | Trabajo | Validación | Artefactos |
 | --- | --- | --- |
@@ -15,7 +15,7 @@ Este flujo prueba y compila. No despliega la aplicación, no publica imágenes D
 
 ## Validación antes de publicar
 
-Las 57 pruebas y compilaciones pasaron localmente. Se verificaron los commits de las acciones en sus repositorios oficiales y la estructura YAML del flujo. La validación local no sustituye una ejecución en el runner Linux de GitHub; esa comprobación sigue pendiente.
+Las 57 pruebas y compilaciones pasaron localmente. Se verificaron los commits de las acciones en sus repositorios oficiales y la estructura YAML del flujo. La ejecución en el runner Linux de GitHub también fue aprobada, incluyendo instalación desde los lockfiles, PostgreSQL real, migraciones e informes de pruebas.
 
 ## Referencias
 

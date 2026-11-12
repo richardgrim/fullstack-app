@@ -4,7 +4,7 @@
 
 Aplicación full stack para un negocio de servicios con una sola agenda. Permite consultar disponibilidad, reservar sin superponer citas y gestionar horarios desde un panel de responsable.
 
-Proyecto 02 del portafolio de **Richard Grichukin Mendez**. Versión funcional local con **57 pruebas aprobadas**. Publicación autorizada; primera ejecución de GitHub Actions pendiente de verificación.
+Proyecto 02 del portafolio de **Richard Grichukin Mendez**. Versión funcional local con **57 pruebas aprobadas**. Código publicado bajo MIT. [Primera ejecución de GitHub Actions aprobada](https://github.com/richardgrim/fullstack-app/actions/runs/43143041184).
 
 ## Qué demuestra
 
@@ -73,7 +73,7 @@ Puertos locales: interfaz **4201**, API **3001**, PostgreSQL **5434**. El volume
 
 Desde backend, con PostgreSQL iniciado y `DB_PASSWORD` en el entorno: `npm test`. Las pruebas usan esquemas temporales aislados. Desde frontend: `npm test -- --watch=false` y `npm run build`.
 
-[GitHub Actions preparado](.github/workflows/ci.yml) para pruebas, migraciones y compilación; **todavía no ejecutado en GitHub**. No realiza despliegues. [Detalle del flujo](docs/ci.md) y [registro de validación](docs/validation.md).
+[GitHub Actions](.github/workflows/ci.yml) ejecuta pruebas, migraciones y compilación; **primera ejecución aprobada en GitHub**. No realiza despliegues. [Detalle del flujo](docs/ci.md) y [registro de validación](docs/validation.md).
 
 ## Evidencias
 

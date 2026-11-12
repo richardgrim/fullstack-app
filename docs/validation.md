@@ -77,3 +77,8 @@ Pendiente para la entrega pública: evidencia visual del recorrido completo con 
 Se prepararon GitHub Actions, documentación de CI, capturas reales y un plan de publicación. Se creó únicamente el repositorio Git local, sin remoto. El flujo YAML pasó el parser de Prettier; los commits de acciones oficiales se verificaron mediante la API de GitHub. Se reutilizan Node.js y PostgreSQL ya empleados en el laboratorio.
 
 No se ha ejecutado el flujo en GitHub ni publicado el proyecto. Las 57 pruebas documentadas corresponden a la versión funcional validada localmente antes de esta preparación; en esta etapa no se alteró su comportamiento.
+
+## Publicación y CI verificados
+
+Repositorio público richardgrim/fullstack-app creado con licencia MIT y autorización del autor. Commit inicial: 89df666. Primera ejecución GitHub Actions: https://github.com/richardgrim/fullstack-app/actions/runs/43143041184 — success. Trabajos frontend y backend aprobados; 57 pruebas, compilación de producción y migraciones ejecutadas dos veces. Los informes y la interfaz compilada están disponibles como artefactos durante siete días. La aplicación sigue siendo una demostración local, no un servicio desplegado públicamente.
+

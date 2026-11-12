@@ -1,6 +1,6 @@
 # Evidencias de Agenda Clara
 
-Fecha: **11 de noviembre de 2026**, America/La_Paz. Entorno local Windows, Node.js 22.23.1, Angular 21.2, NestJS 11.2.9 y PostgreSQL 17 en Docker. Primera versión funcional, aún sin commit público.
+Fecha: **11 de noviembre de 2026**, America/La_Paz. Entorno local Windows, Node.js 22.23.1, Angular 21.2, NestJS 11.2.9 y PostgreSQL 17 en Docker. Primera versión funcional publicada: commit 89df666.
 
 ## Capturas reales
 
@@ -17,4 +17,4 @@ Las pruebas de API verifican creación y persistencia de reservas, acceso por pr
 
 ## Límites de la evidencia
 
-Las capturas acreditan la interfaz y la consulta/configuración visible. El recorrido completo de creación y cancelación de una cita se acredita por las pruebas automatizadas, no por estas imágenes. GitHub Actions está preparado y pendiente de su primera ejecución tras autorizar la publicación. No hay evidencia de despliegue público.
+Las capturas acreditan la interfaz y la consulta/configuración visible. El recorrido completo de creación y cancelación de una cita se acredita por las pruebas automatizadas, no por estas imágenes. [GitHub Actions aprobado](https://github.com/richardgrim/fullstack-app/actions/runs/43143041184): ambos trabajos completados, incluyendo pruebas, compilación y migraciones. No hay evidencia de despliegue público.
